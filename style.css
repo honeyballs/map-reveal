@@ -74,3 +74,13 @@ body {
   max-width: calc(100% - 40px);
   max-height: calc(100% - 20px);
 }
+
+/* Grid */
+
+#grid {
+  position: absolute;
+  display: grid;
+  justify-items: stretch;
+  gap: 0px;
+  grid-auto-flow: row;
+}
