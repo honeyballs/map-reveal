@@ -84,3 +84,13 @@ body {
   gap: 0px;
   grid-auto-flow: row;
 }
+
+.field {
+  background-color: transparent;
+  border: 1px solid #ffda79;
+  cursor: pointer;
+}
+
+.field.fog {
+  background-color: #ffb142;
+}

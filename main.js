@@ -1,75 +1,97 @@
 console.log("executing");
 
-let input = document.getElementById("img-input");
-
 // Set the selection function of the input
+let input = document.getElementById("img-input");
 input.onchange = () => readImg(input);
 
-initializeGridDiv()
+let grid = {fields: [], width: 0, height: 0};
 
 /**
  * Read an image from a user selected an place it in an image tag
  */
 function readImg(input) {
-  console.log;
-  if (input.files && input.files[0]) {
-    var reader = new FileReader();
-    reader.onload = e => {
-      document
-        .getElementById("map-img")
-        .setAttribute("src", e.target.result);
-    };
-    reader.readAsDataURL(input.files[0]);
-    imageSelected(true);
-  }
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document
+                .getElementById("map-img")
+                .setAttribute("src", e.target.result);
+            imageSelected(true);
+            createGrid(10, 10);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
 /**
  *
  * If an image was selected we hide the input and display the tool div
  *
- * @param {bool} selected
+ * @param selected
  */
 function imageSelected(selected) {
-  if (selected) {
-    document.getElementById("choosing-div").classList.add("hidden");
-    document.getElementById("mapping").classList.remove("hidden");
-  }
+    if (selected) {
+        document.getElementById("choosing-div").classList.add("hidden");
+        document.getElementById("mapping").classList.remove("hidden");
+    }
 }
 
-function createGrid() {
-  let grid = {x: 50, y: 50, items: []}
-  let columns = []
-  for (let i = 0; i < 15; i++) {
-    let rows = []
-      for (let j = 0; j < 15; j++) {
-         rows.push({fog: true})
-      }
-    columns.push(rows)  
-  }
-  grid.items = columns
-  return grid
+/**
+ * Create a grid of squares with the amount of squares the user specifies.
+ *
+ * @param xAxisSquares Amount of squares on X-Axis
+ * @param yAxisSquares Amount of squares on Y-Axis
+ */
+function createGrid(xAxisSquares, yAxisSquares) {
+    // Before any resizing was done set the dimensions to the image dimensions
+    grid.width = document.getElementById("map-img").offsetWidth;
+    grid.height = document.getElementById("map-img").offsetHeight;
+    // Create the grid items
+    const columns = [];
+    for (let y = 0; y < yAxisSquares; y++) {
+        const row = [];
+        for (let x = 0; x < xAxisSquares; x++) {
+            row.push({fog: true});
+        }
+        columns.push(row);
+    }
+    grid.fields = columns;
+    renderGrid()
 }
 
-function initializeGridDiv() {
-  let gridElement = document.getElementById("grid")
-  let grid = createGrid()
+// TODO: Neu rendern wenn sich Größe ändert
+// TODO: Fog im Objekt aus- und anmachen, neu rendern
+// TODO: Auswahl für Grid Größe
 
-  console.log(grid)
-  
-  gridElement.style.width = `${grid.items[0].length * grid.x}px`
-  gridElement.style.height = `${grid.items.length * grid.y}px`
-  gridElement.style.gridTemplateColumns = `repeat(${grid.items.length}, ${grid.y}px)`
-  gridElement.style.gridTemplateRows = `repeat(${grid.items[0].length}, ${grid.x}px)`
+/**
+ * Renders the grid.
+ *
+ */
+function renderGrid() {
+    let gridElement = document.getElementById("grid");
 
-  console.log(gridElement.style.width)
+    console.log(grid);
 
-  grid.items.forEach(row => {
-    row.forEach(item => {
-      let elementDiv = document.createElement("div")
-      elementDiv.style.cssText = "background: black; border: 1px solid red; cursor: pointer;"
-      gridElement.appendChild(elementDiv)
+    // Calculate the width and height of the fields.
+    const fieldWidth = grid.width / grid.fields[0].length;
+    const fieldHeight = grid.height / grid.fields.length;
+
+    gridElement.style.width = `${grid.width}px`;
+    gridElement.style.height = `${grid.height}px`;
+    gridElement.style.gridTemplateColumns = `repeat(${grid.fields.length}, ${fieldWidth}px)`;
+    gridElement.style.gridTemplateRows = `repeat(${grid.fields[0].length}, ${fieldHeight}px)`;
+
+    console.log(gridElement.style.width);
+
+    grid.fields.forEach(row => {
+        row.forEach(_ => {
+            let elementDiv = document.createElement("div");
+            elementDiv.classList.add("field", "fog");
+            elementDiv.onclick = e => {
+              e.preventDefault();
+              elementDiv.classList.toggle("fog");
+            };
+            gridElement.appendChild(elementDiv);
+        });
     })
-    console.log()
-  })
 }
