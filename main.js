@@ -4,6 +4,10 @@ console.log("executing");
 let input = document.getElementById("img-input");
 input.onchange = () => readImg(input);
 
+// Set the resize and d&d listener
+document.getElementById("resizer").onmousedown = startResize;
+document.getElementById("mover").onmousedown = startDragAndDrop;
+
 let grid = {fields: [], width: 0, height: 0};
 
 /**
@@ -59,9 +63,8 @@ function createGrid(xAxisSquares, yAxisSquares) {
     renderGrid()
 }
 
-// TODO: Neu rendern wenn sich Größe ändert
-// TODO: Fog im Objekt aus- und anmachen, neu rendern
-// TODO: Auswahl für Grid Größe
+// TODO: Auswahl für Grid Größe (Anzahl an Feldern)
+// TODO: Toggle alles sichtbar/unsichtbar
 
 /**
  * Renders the grid.
@@ -69,9 +72,7 @@ function createGrid(xAxisSquares, yAxisSquares) {
  */
 function renderGrid() {
     let gridElement = document.getElementById("grid");
-
-    console.log(grid);
-
+    gridElement.classList.remove("hidden");
     // Calculate the width and height of the fields.
     const fieldWidth = grid.width / grid.fields[0].length;
     const fieldHeight = grid.height / grid.fields.length;
@@ -83,15 +84,90 @@ function renderGrid() {
 
     console.log(gridElement.style.width);
 
+    // Only add grid fields if necessary
+    if (gridElement.children.length !== grid.fields.length * grid.fields[0].length + 1) {
+        console.log("changing children");
+        // Remove for safety
+        const fields = gridElement.getElementsByClassName("field");
+        while (fields[0]) {
+            fields[0].parentNode.removeChild(fields[0]);
+        }
+        addGridFields(gridElement);
+    }
+
+}
+
+/**
+ * Add fields to the grid element.
+ */
+function addGridFields(gridElement) {
     grid.fields.forEach(row => {
-        row.forEach(_ => {
+        row.forEach(field => {
             let elementDiv = document.createElement("div");
-            elementDiv.classList.add("field", "fog");
+            elementDiv.classList.add("field");
+            // Change opacity
+            field.fog && elementDiv.classList.add("fog");
+            // Register click handler
             elementDiv.onclick = e => {
-              e.preventDefault();
-              elementDiv.classList.toggle("fog");
+                e.preventDefault();
+                // Change the value in the underlying grid object
+                field.fog = !field.fog;
+                elementDiv.classList.toggle("fog");
             };
             gridElement.appendChild(elementDiv);
         });
     })
+}
+
+/**
+ * Initializes values needed for resizing and registers listeners which handle the actual resizing.
+ */
+function startResize(event) {
+    event.preventDefault();
+    // Init values
+    let gridElement = document.getElementById("grid");
+    const originalWidth = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('width').replace('px', ''));
+    const originalHeight = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('height').replace('px', ''));
+    const originalMouseX = event.pageX;
+    const originalMouseY = event.pageY;
+
+    // Listener function to calculate the new size and trigger a rerender
+    const resize = e => {
+        grid.width = originalWidth + (e.pageX - originalMouseX);
+        grid.height = originalHeight + (e.pageY - originalMouseY);
+        renderGrid();
+    };
+
+    window.addEventListener('mousemove', resize);
+
+    // Remove the listener to stop resizing
+    window.onmouseup = e => {
+        window.removeEventListener('mousemove', resize)
+    }
+}
+
+/**
+ * Initializes values needed for d&d and registers listeners which handle the actual dragging and dropping.
+ */
+function startDragAndDrop(event) {
+    event.preventDefault();
+    let gridElement = document.getElementById("grid");
+    const originalX = gridElement.getBoundingClientRect().left;
+    const originalY = gridElement.getBoundingClientRect().top;
+    const originalMouseX = event.pageX;
+    const originalMouseY = event.pageY;
+
+    // Listener function to calculate the new position.
+    // No Rerender necessary
+    const dragging = e => {
+        gridElement.style.left = `${originalX + (e.pageX - originalX)}px`;
+        gridElement.style.top = `${originalY + (e.pageY - originalY)}px`;
+    };
+
+    window.addEventListener('mousemove', dragging);
+
+    // Remove the listener to stop resizing
+    window.onmouseup = e => {
+        window.removeEventListener('mousemove', dragging)
+    }
 }
