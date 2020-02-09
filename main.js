@@ -6,7 +6,9 @@ input.onchange = () => readImg(input);
 
 // Set the resize and d&d listener
 document.getElementById("resizer").onmousedown = startResize;
+document.getElementById("resizer").ontouchstart = startResize;
 document.getElementById("mover").onmousedown = startDragAndDrop;
+document.getElementById("mover").ontouchstart = startDragAndDrop;
 
 let grid = {fields: [], width: 0, height: 0};
 
@@ -21,7 +23,8 @@ function readImg(input) {
                 .getElementById("map-img")
                 .setAttribute("src", e.target.result);
             imageSelected(true);
-            createGrid(10, 10);
+            // Remove this when done
+            setTimeout(() => createGrid(10, 10), 500);
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -139,11 +142,16 @@ function startResize(event) {
     };
 
     window.addEventListener('mousemove', resize);
+    window.addEventListener('touchmove', resize);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
         window.removeEventListener('mousemove', resize)
-    }
+    };
+
+    window.ontouchend = e => {
+        window.removeEventListener('touchmove', resize);
+    };
 }
 
 /**
@@ -165,9 +173,14 @@ function startDragAndDrop(event) {
     };
 
     window.addEventListener('mousemove', dragging);
+    window.addEventListener('touchmove', dragging);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
-        window.removeEventListener('mousemove', dragging)
-    }
+        window.removeEventListener('mousemove', dragging);
+    };
+
+    window.ontouchend = e => {
+        window.removeEventListener('touchmove', dragging);
+    };
 }
