@@ -1,5 +1,3 @@
-console.log("executing");
-
 // Set the selection function of the input
 let input = document.getElementById("img-input");
 input.onchange = () => readImg(input);
@@ -85,11 +83,8 @@ function renderGrid() {
     gridElement.style.gridTemplateColumns = `repeat(${grid.fields.length}, ${fieldWidth}px)`;
     gridElement.style.gridTemplateRows = `repeat(${grid.fields[0].length}, ${fieldHeight}px)`;
 
-    console.log(gridElement.style.width);
-
     // Only add grid fields if necessary
-    if (gridElement.children.length !== grid.fields.length * grid.fields[0].length + 1) {
-        console.log("changing children");
+    if (gridElement.children.length !== grid.fields.length * grid.fields[0].length + 2) {
         // Remove for safety
         const fields = gridElement.getElementsByClassName("field");
         while (fields[0]) {
