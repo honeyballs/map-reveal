@@ -1,31 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-   <link rel="stylesheet" type="text/css" href="./style.css">
-   <title>Map Reval</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css"
+          integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"/>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+    <title>Map Reval</title>
 </head>
 <body>
-   <div id="content">
+<div id="content">
 
-      <div id="choosing-div">
-            <input type="file" id="img-input" accept="image/*">
-            <label for="img-input" id="label">Select a map</label>
-      </div>
+    <button id="settings-button" class="page-button hidden">
+       <i class="fas fa-wrench"></i>
+    </button>
+    <form id="grid-settings" class="hidden">
+        <label for="settings-rows">Rows:</label>
+        <input type="number" name="rows" id="settings-rows" placeholder="10" min="1" step="1" required>
+        <label for="settings-columns">Columns:</label>
+        <input type="number" name="columns" id="settings-columns" placeholder="10" min="1" step="1" required>
+        <button id="create-grid" >Create</button>
+    </form>
 
-      <div id="mapping" class="hidden">
-         <img id="map-img">
-      </div>
+    <button id="map-toggle-button" class="page-button hidden">
+        <i class="fas fa-eye map-icon"></i>
+        <i class="fas fa-eye-slash hidden map-icon"></i>
+    </button>
 
-      <div id="grid" class="hidden">
-         <div id="resizer" class="handle"></div>
-         <div id="mover" class="handle"></div>
-      </div>
-   
-   </div>
+    <div id="choosing-div">
+        <input type="file" id="img-input" accept="image/*">
+        <label for="img-input" id="label">Select a map</label>
+    </div>
 
-   <script src="./main.js"></script>
+    <div id="mapping" class="hidden">
+        <img id="map-img">
+    </div>
+
+    <div id="grid" class="hidden">
+        <div id="resizer" class="handle"></div>
+        <div id="mover" class="handle"></div>
+    </div>
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/all.min.js"
+        integrity="sha256-MAgcygDRahs+F/Nk5Vz387whB4kSK9NXlDN3w58LLq0=" crossorigin="anonymous"></script>
+<script src="./main.js"></script>
 </body>
 </html>

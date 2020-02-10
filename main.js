@@ -1,14 +1,60 @@
+// Init variables
+let grid = {fields: [], width: 0, height: 0, top: 0, left: 0};
+let imageLoaded = false;
+let mapHidden = true;
+
 // Set the selection function of the input
-let input = document.getElementById("img-input");
+const input = document.getElementById("img-input");
 input.onchange = () => readImg(input);
+
+// Toggle the settings form
+const settingsToggle = document.getElementById("settings-button");
+const gridSettings = document.getElementById("grid-settings");
+settingsToggle.onclick = e => {
+    e.stopPropagation();
+    settingsToggle.classList.toggle("settings-open");
+    gridSettings.classList.toggle("hidden");
+};
+
+window.onclick = e => {
+    settingsToggle.classList.remove("settings-open");
+    gridSettings.classList.add("hidden");
+};
+
+// Prevent propagation from out of the form to prevent closing it
+gridSettings.onclick = e => e.stopPropagation();
+
+// Create the grid by using the settings form
+document.getElementById("create-grid").onclick = e => {
+    e.stopPropagation();
+    e.preventDefault();
+    settingsToggle.classList.remove("settings-open");
+    gridSettings.classList.add("hidden");
+    const rowValue = +document.getElementById("settings-rows").value;
+    const colValue = +document.getElementById("settings-columns").value;
+    if (rowValue > 0 && colValue > 0 && imageLoaded) {
+        createGrid(rowValue, colValue);
+    }
+};
+
+// Toggle all fields of the map
+const mapToggle = document.getElementById("map-toggle-button");
+mapToggle.onclick = e => {
+    e.preventDefault();
+    const icons = mapToggle.getElementsByClassName("map-icon");
+    for (let icon of icons) {
+        icon.classList.toggle("hidden");
+    }
+    grid.fields.forEach(row => row.forEach(item => item.fog = !mapHidden));
+    mapHidden = !mapHidden;
+    renderGrid();
+};
+
 
 // Set the resize and d&d listener
 document.getElementById("resizer").onmousedown = startResize;
-document.getElementById("resizer").ontouchstart = startResize;
 document.getElementById("mover").onmousedown = startDragAndDrop;
-document.getElementById("mover").ontouchstart = startDragAndDrop;
 
-let grid = {fields: [], width: 0, height: 0};
 
 /**
  * Read an image from a user selected an place it in an image tag
@@ -20,9 +66,8 @@ function readImg(input) {
             document
                 .getElementById("map-img")
                 .setAttribute("src", e.target.result);
-            imageSelected(true);
-            // Remove this when done
-            setTimeout(() => createGrid(10, 10), 500);
+            imageLoaded = true;
+            imageSelected();
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -30,14 +75,15 @@ function readImg(input) {
 
 /**
  *
- * If an image was selected we hide the input and display the tool div
+ * If an image was selected we hide the input and display the map and settings.
  *
  * @param selected
  */
-function imageSelected(selected) {
-    if (selected) {
+function imageSelected() {
+    if (imageLoaded) {
         document.getElementById("choosing-div").classList.add("hidden");
         document.getElementById("mapping").classList.remove("hidden");
+        settingsToggle.classList.remove("hidden");
     }
 }
 
@@ -72,27 +118,36 @@ function createGrid(xAxisSquares, yAxisSquares) {
  *
  */
 function renderGrid() {
-    let gridElement = document.getElementById("grid");
+    const gridElement = document.getElementById("grid");
+    const mapElement = document.getElementById("map-img");
     gridElement.classList.remove("hidden");
-    // Calculate the width and height of the fields.
-    const fieldWidth = grid.width / grid.fields[0].length;
-    const fieldHeight = grid.height / grid.fields.length;
 
+    // Calculate the width and height of the fields.
+    const fieldWidth = grid.width / grid.fields.length;
+    const fieldHeight = grid.height / grid.fields[0].length;
+
+    // Calculate the position of the grid if not already set
+    const originalX = grid.left !== 0 ? grid.left : mapElement.getBoundingClientRect().left;
+    const originalY = grid.top !== 0 ? grid.top : mapElement.getBoundingClientRect().top;
+
+    // Set the appropriate styles
     gridElement.style.width = `${grid.width}px`;
     gridElement.style.height = `${grid.height}px`;
+    gridElement.style.top = `${originalY}px`;
+    gridElement.style.left = `${originalX}px`;
     gridElement.style.gridTemplateColumns = `repeat(${grid.fields.length}, ${fieldWidth}px)`;
     gridElement.style.gridTemplateRows = `repeat(${grid.fields[0].length}, ${fieldHeight}px)`;
 
-    // Only add grid fields if necessary
-    if (gridElement.children.length !== grid.fields.length * grid.fields[0].length + 2) {
-        // Remove for safety
-        const fields = gridElement.getElementsByClassName("field");
-        while (fields[0]) {
-            fields[0].parentNode.removeChild(fields[0]);
-        }
-        addGridFields(gridElement);
+    // Removes and adds fields. This is used to be able to store the status in the grid object and render accordingly.
+    const fields = gridElement.getElementsByClassName("field");
+    while (fields[0]) {
+        fields[0].parentNode.removeChild(fields[0]);
     }
+    addGridFields(gridElement);
 
+
+    // When a grid is rendered we display a toggle button for it.
+    mapToggle.classList.remove("hidden");
 }
 
 /**
@@ -110,7 +165,7 @@ function addGridFields(gridElement) {
                 e.preventDefault();
                 // Change the value in the underlying grid object
                 field.fog = !field.fog;
-                elementDiv.classList.toggle("fog");
+                renderGrid()
             };
             gridElement.appendChild(elementDiv);
         });
@@ -128,6 +183,8 @@ function startResize(event) {
     const originalHeight = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('height').replace('px', ''));
     const originalMouseX = event.pageX;
     const originalMouseY = event.pageY;
+    const originalX = gridElement.getBoundingClientRect().left;
+    const originalY = gridElement.getBoundingClientRect().top;
 
     // Listener function to calculate the new size and trigger a rerender
     const resize = e => {
@@ -137,15 +194,10 @@ function startResize(event) {
     };
 
     window.addEventListener('mousemove', resize);
-    window.addEventListener('touchmove', resize);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
         window.removeEventListener('mousemove', resize)
-    };
-
-    window.ontouchend = e => {
-        window.removeEventListener('touchmove', resize);
     };
 }
 
@@ -163,19 +215,16 @@ function startDragAndDrop(event) {
     // Listener function to calculate the new position.
     // No Rerender necessary
     const dragging = e => {
-        gridElement.style.left = `${originalX + (e.pageX - originalX)}px`;
-        gridElement.style.top = `${originalY + (e.pageY - originalY)}px`;
+        grid.left = originalX + (e.pageX - originalX);
+        grid.top = originalY + (e.pageY - originalY);
+        renderGrid()
     };
 
     window.addEventListener('mousemove', dragging);
-    window.addEventListener('touchmove', dragging);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
         window.removeEventListener('mousemove', dragging);
     };
 
-    window.ontouchend = e => {
-        window.removeEventListener('touchmove', dragging);
-    };
 }
