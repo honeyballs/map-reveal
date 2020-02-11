@@ -176,7 +176,6 @@ function addGridFields(gridElement) {
  * Initializes values needed for resizing and registers listeners which handle the actual resizing.
  */
 function startResize(event) {
-    event.preventDefault();
     // Init values
     let gridElement = document.getElementById("grid");
     const originalWidth = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('width').replace('px', ''));
@@ -205,7 +204,6 @@ function startResize(event) {
  * Initializes values needed for d&d and registers listeners which handle the actual dragging and dropping.
  */
 function startDragAndDrop(event) {
-    event.preventDefault();
     let gridElement = document.getElementById("grid");
     const originalX = gridElement.getBoundingClientRect().left;
     const originalY = gridElement.getBoundingClientRect().top;
