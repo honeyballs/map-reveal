@@ -35,7 +35,7 @@ document.getElementById("create-grid").onclick = e => {
     const rowAmount = rowValue !== "" ? +rowValue : 10;
     const colAmount = colValue !== "" ? +colValue : 10;
     if (rowAmount > 0 && colAmount > 0 && imageLoaded) {
-        createGrid(rowValue, colValue);
+        createGrid(rowAmount, colAmount);
     }
 };
 
