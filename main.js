@@ -185,10 +185,14 @@ function addGridFields(gridElement) {
             field.fog && elementDiv.classList.add("fog");
             // Register click handler
             elementDiv.onclick = e => {
-                e.preventDefault();
                 // Change the value in the underlying grid object
                 field.fog = !field.fog;
-                renderGrid()
+                renderGrid();
+            };
+            elementDiv.ontouchstart = e => {
+                e.preventDefault();
+                field.fog = !field.fog;
+                renderGrid();
             };
             gridElement.appendChild(elementDiv);
         });
