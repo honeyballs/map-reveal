@@ -12,8 +12,12 @@ const settingsToggle = document.getElementById("settings-button");
 const gridSettings = document.getElementById("grid-settings");
 settingsToggle.onclick = e => {
     e.stopPropagation();
-    settingsToggle.classList.toggle("settings-open");
-    gridSettings.classList.toggle("hidden");
+    toggleSettings();
+};
+settingsToggle.ontouchstart = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleSettings();
 };
 
 window.onclick = e => {
@@ -42,16 +46,12 @@ document.getElementById("create-grid").onclick = e => {
 // Toggle all fields of the map
 const mapToggle = document.getElementById("map-toggle-button");
 mapToggle.onclick = e => {
-    e.preventDefault();
-    const icons = mapToggle.getElementsByClassName("map-icon");
-    for (let icon of icons) {
-        icon.classList.toggle("hidden");
-    }
-    grid.fields.forEach(row => row.forEach(item => item.fog = !mapHidden));
-    mapHidden = !mapHidden;
-    renderGrid();
+    toggleGridFields();
 };
-
+mapToggle.ontouchstart = e => {
+    e.preventDefault();
+    toggleGridFields();
+};
 
 // Set the resize and d&d listener
 document.getElementById("resizer").onmousedown = startResize;
@@ -59,6 +59,26 @@ document.getElementById("resizer").ontouchstart = startResize;
 document.getElementById("mover").onmousedown = startDragAndDrop;
 document.getElementById("mover").ontouchstart = startDragAndDrop;
 
+/**
+ * Show or hide the grid settings.
+ */
+function toggleSettings() {
+    settingsToggle.classList.toggle("settings-open");
+    gridSettings.classList.toggle("hidden");
+}
+
+/**
+ * Hides or shows all fields of the displayed grid.
+ */
+function toggleGridFields() {
+    const icons = mapToggle.getElementsByClassName("map-icon");
+    for (let icon of icons) {
+        icon.classList.toggle("hidden");
+    }
+    grid.fields.forEach(row => row.forEach(item => item.fog = !mapHidden));
+    mapHidden = !mapHidden;
+    renderGrid();
+}
 
 /**
  * Read an image from a user selected an place it in an image tag
@@ -186,8 +206,6 @@ function startResize(event) {
     const originalHeight = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('height').replace('px', ''));
     const originalMouseX = event.touches ? event.touches[0].pageX : event.pageX;
     const originalMouseY = event.touches ? event.touches[0].pageY : event.pageY;
-    // const originalX = gridElement.getBoundingClientRect().left;
-    // const originalY = gridElement.getBoundingClientRect().top;
 
     // Listener function to calculate the new size and trigger a rerender
     const resize = e => {
@@ -207,6 +225,7 @@ function startResize(event) {
         e.preventDefault();
         window.removeEventListener("mousemove", resize);
     };
+
     window.ontouchend = e => {
         e.preventDefault();
         window.removeEventListener("touchmove", resize);
@@ -240,6 +259,7 @@ function startDragAndDrop(event) {
         e.preventDefault();
         window.removeEventListener("mousemove", dragging);
     };
+
     window.ontouchend = e => {
         e.preventDefault();
         window.removeEventListener("touchmove", dragging);
