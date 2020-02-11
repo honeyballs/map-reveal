@@ -17,7 +17,7 @@ settingsToggle.onclick = e => {
 };
 
 window.onclick = e => {
-    settingsToggle.classList.remove("settings-open");
+    settingsToggle.classList && settingsToggle.classList.remove("settings-open");
     gridSettings.classList.add("hidden");
 };
 
@@ -55,7 +55,9 @@ mapToggle.onclick = e => {
 
 // Set the resize and d&d listener
 document.getElementById("resizer").onmousedown = startResize;
+document.getElementById("resizer").ontouchstart = startResize;
 document.getElementById("mover").onmousedown = startDragAndDrop;
+document.getElementById("mover").ontouchstart = startDragAndDrop;
 
 
 /**
@@ -79,7 +81,6 @@ function readImg(input) {
  *
  * If an image was selected we hide the input and display the map and settings.
  *
- * @param selected
  */
 function imageSelected() {
     if (imageLoaded) {
@@ -178,27 +179,37 @@ function addGridFields(gridElement) {
  * Initializes values needed for resizing and registers listeners which handle the actual resizing.
  */
 function startResize(event) {
+    event.preventDefault();
     // Init values
     let gridElement = document.getElementById("grid");
     const originalWidth = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('width').replace('px', ''));
     const originalHeight = parseFloat(getComputedStyle(gridElement, null).getPropertyValue('height').replace('px', ''));
-    const originalMouseX = event.pageX;
-    const originalMouseY = event.pageY;
-    const originalX = gridElement.getBoundingClientRect().left;
-    const originalY = gridElement.getBoundingClientRect().top;
+    const originalMouseX = event.touches ? event.touches[0].pageX : event.pageX;
+    const originalMouseY = event.touches ? event.touches[0].pageY : event.pageY;
+    // const originalX = gridElement.getBoundingClientRect().left;
+    // const originalY = gridElement.getBoundingClientRect().top;
 
     // Listener function to calculate the new size and trigger a rerender
     const resize = e => {
-        grid.width = originalWidth + (e.pageX - originalMouseX);
-        grid.height = originalHeight + (e.pageY - originalMouseY);
+        e.preventDefault();
+        const movedX = e.touches ? e.touches[0].pageX : e.pageX;
+        const movedY = e.touches ? e.touches[0].pageY : e.pageY;
+        grid.width = originalWidth + (movedX - originalMouseX);
+        grid.height = originalHeight + (movedY - originalMouseY);
         renderGrid();
     };
 
-    window.addEventListener('mousemove', resize);
+    window.addEventListener("touchmove", resize);
+    window.addEventListener("mousemove", resize);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
-        window.removeEventListener('mousemove', resize)
+        e.preventDefault();
+        window.removeEventListener("mousemove", resize);
+    };
+    window.ontouchend = e => {
+        e.preventDefault();
+        window.removeEventListener("touchmove", resize);
     };
 }
 
@@ -209,22 +220,29 @@ function startDragAndDrop(event) {
     let gridElement = document.getElementById("grid");
     const originalX = gridElement.getBoundingClientRect().left;
     const originalY = gridElement.getBoundingClientRect().top;
-    const originalMouseX = event.pageX;
-    const originalMouseY = event.pageY;
 
     // Listener function to calculate the new position.
     // No Rerender necessary
     const dragging = e => {
-        grid.left = originalX + (e.pageX - originalX);
-        grid.top = originalY + (e.pageY - originalY);
+        e.preventDefault();
+        const movedX = e.touches ? e.touches[0].pageX : e.pageX;
+        const movedY = e.touches ? e.touches[0].pageY : e.pageY;
+        grid.left = originalX + (movedX - originalX);
+        grid.top = originalY + (movedY - originalY);
         renderGrid()
     };
 
-    window.addEventListener('mousemove', dragging);
+    window.addEventListener("mousemove", dragging);
+    window.addEventListener("touchmove", dragging);
 
     // Remove the listener to stop resizing
     window.onmouseup = e => {
-        window.removeEventListener('mousemove', dragging);
+        e.preventDefault();
+        window.removeEventListener("mousemove", dragging);
+    };
+    window.ontouchend = e => {
+        e.preventDefault();
+        window.removeEventListener("touchmove", dragging);
     };
 
 }
