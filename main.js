@@ -30,9 +30,11 @@ document.getElementById("create-grid").onclick = e => {
     e.preventDefault();
     settingsToggle.classList.remove("settings-open");
     gridSettings.classList.add("hidden");
-    const rowValue = +document.getElementById("settings-rows").value;
-    const colValue = +document.getElementById("settings-columns").value;
-    if (rowValue > 0 && colValue > 0 && imageLoaded) {
+    const rowValue = document.getElementById("settings-rows").value;
+    const colValue = document.getElementById("settings-columns").value;
+    const rowAmount = rowValue !== "" ? +rowValue : 10;
+    const colAmount = colValue !== "" ? +colValue : 10;
+    if (rowAmount > 0 && colAmount > 0 && imageLoaded) {
         createGrid(rowValue, colValue);
     }
 };
